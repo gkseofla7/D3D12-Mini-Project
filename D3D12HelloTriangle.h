@@ -28,6 +28,13 @@ struct SceneConstantBuffer
     float padding[60]; // Padding so the constant buffer is 256-byte aligned.
 };
 static_assert((sizeof(SceneConstantBuffer) % 256) == 0, "Constant Buffer size must be 256-byte aligned");
+
+struct BasicVertexConstantData {
+    XMMATRIX model;// -> 16
+    float padding[48];
+};
+static_assert((sizeof(BasicVertexConstantData) % 256) == 0, "BasicVertexConstantData size must be 256-byte aligned");
+
 class D3D12HelloTriangle : public DXSample
 {
 public:
@@ -53,7 +60,8 @@ private:
     ComPtr<IDXGISwapChain3> m_swapChain;
     ComPtr<ID3D12Device> m_device;
     ComPtr<ID3D12Resource> m_renderTargets[FrameCount];
-    ComPtr<ID3D12CommandAllocator> m_commandAllocator;
+    ComPtr<ID3D12CommandAllocator> m_commandAllocators[FrameCount];
+    ComPtr<ID3D12CommandAllocator> m_bundleAllocator;
     ComPtr<ID3D12CommandQueue> m_commandQueue;
     ComPtr<ID3D12RootSignature> m_rootSignature;
     ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
@@ -61,6 +69,7 @@ private:
     ComPtr<ID3D12DescriptorHeap> m_cbvHeap;
     ComPtr<ID3D12PipelineState> m_pipelineState;
     ComPtr<ID3D12GraphicsCommandList> m_commandList;
+    ComPtr<ID3D12GraphicsCommandList> m_bundle;
     UINT m_rtvDescriptorSize;
 
     // App resources.
@@ -72,7 +81,7 @@ private:
     ComPtr<ID3D12Resource> m_texture;
 
     ComPtr<ID3D12Resource> m_constantBuffer;
-    SceneConstantBuffer m_constantBufferData;
+    BasicVertexConstantData m_constantBufferData;
     UINT8* m_pCbvDataBegin;
 
 
@@ -80,11 +89,14 @@ private:
     UINT m_frameIndex;
     HANDLE m_fenceEvent;
     ComPtr<ID3D12Fence> m_fence;
-    UINT64 m_fenceValue;
+    UINT64 m_fenceValues[FrameCount];
+    UINT64 m_fenceValue = 0;
 
     void LoadPipeline();
     void LoadAssets();
     void PopulateCommandList();
+    void WaitForGpu();
+    void MoveToNextFrame();
     void WaitForPreviousFrame();
 
     void ReadImage(const std::string filename, std::vector<uint8_t>& image,

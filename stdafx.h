@@ -30,3 +30,8 @@
 #include <string>
 #include <wrl.h>
 #include <shellapi.h>
+
+//#include <directxtk/SimpleMath.h>
+//
+//using DirectX::SimpleMath::Matrix;
+//using DirectX::SimpleMath::Vector3;

@@ -10,8 +10,8 @@
 //*********************************************************
 cbuffer SceneConstantBuffer : register(b0)
 {
-    float4 offset;
-    float4 padding[15];
+    matrix model; // -> 16
+    float4 padding[12];
 };
 
 struct PSInput
@@ -26,10 +26,9 @@ SamplerState g_sampler : register(s0);
 PSInput VSMain(float4 position : POSITION, float4 uv : TEXCOORD)
 {
     PSInput result;
-
-    result.position = position + offset;
+    result.position = mul(position, model);
+    int a = 1;
     result.uv = uv;
-
     return result;
 }
 
